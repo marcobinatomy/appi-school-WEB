@@ -1,0 +1,1805 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Comunicazione Scolastica</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8f9fa;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            opacity: 0.9;
+        }
+
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e5e7eb;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #374151;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .channel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .notification-toggle-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+        }
+
+        .notification-toggle-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+
+        .notification-toggle-btn.disabled {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .notification-toggle-btn.disabled:hover {
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+
+        #notification-icon {
+            font-size: 1rem;
+        }
+
+        .option-group {
+            display: grid;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .option {
+            padding: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .option.selected {
+            border-color: #3b82f6;
+            background: linear-gradient(135deg, #eff6ff, #dbeafe);
+            transform: translateY(-2px);
+        }
+
+        .option-label {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .option.selected .option-label {
+            color: #3b82f6;
+        }
+
+        .option-description {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .input-group {
+            margin-bottom: 1rem;
+        }
+
+        .input-label {
+            display: block;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .primary-button {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .primary-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .primary-button:disabled {
+            background: #d1d5db;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .channel-tabs {
+            display: flex;
+            overflow-x: auto;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+        }
+
+        .channel-tab {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            font-size: 0.9rem;
+        }
+
+        .channel-tab.official { background: #dbeafe; color: #3b82f6; }
+        .channel-tab.parents { background: #d1fae5; color: #10b981; }
+        .channel-tab.urgent { background: #fee2e2; color: #ef4444; }
+        .channel-tab.absence { background: #fef3c7; color: #f59e0b; }
+
+        .channel-tab.active {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .messages-container {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 1.5rem;
+            padding-right: 0.5rem;
+        }
+
+        .message {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #e5e7eb;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .message.teacher {
+            border-left-color: #3b82f6;
+            background: linear-gradient(135deg, #eff6ff, #f8fafc);
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .message-author {
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .message-time {
+            font-size: 0.8rem;
+            color: #9ca3af;
+        }
+
+        .message-text {
+            color: #374151;
+            line-height: 1.6;
+        }
+
+        .message-input-container {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 25px;
+            resize: none;
+            font-size: 1rem;
+            font-family: inherit;
+            max-height: 100px;
+        }
+
+        .send-button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .send-button:hover:not(:disabled) {
+            background: #2563eb;
+            transform: translateY(-2px);
+        }
+
+        .send-button:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .info-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #6b7280;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-value {
+            color: #374151;
+            font-weight: 500;
+        }
+
+        .setup-required {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: #6b7280;
+        }
+
+        .setup-required h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #374151;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: #9ca3af;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-complete {
+            background: #d1fae5;
+            color: #10b981;
+        }
+
+        .status-incomplete {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+
+        /* Hero Page Styles */
+        .hero-welcome {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, #eff6ff, #dbeafe);
+            border-radius: 20px;
+            border: 1px solid #93c5fd;
+        }
+
+        .hero-welcome h2 {
+            font-size: 2rem;
+            color: #1e40af;
+            margin-bottom: 0.5rem;
+        }
+
+        .hero-welcome p {
+            color: #3b82f6;
+            font-size: 1.1rem;
+        }
+
+        /* Top Navigation */
+        .top-nav {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-btn:hover {
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            transform: translateY(-1px);
+        }
+
+        /* Fullscreen Hero Channels */
+        .hero-channels-fullscreen {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 20px;
+            height: calc(100vh - 40px);
+            box-sizing: border-box;
+        }
+
+        .hero-channels-fullscreen .hero-channel {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            color: white;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            min-height: 200px;
+        }
+
+        .hero-channels-fullscreen .hero-channel:nth-child(1) {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .hero-channels-fullscreen .hero-channel:nth-child(2) {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #333;
+        }
+
+        .hero-channels-fullscreen .hero-channel:nth-child(3) {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ffa500 100%);
+        }
+
+        .hero-channels-fullscreen .hero-channel:nth-child(4) {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+        }
+
+        .hero-channels-fullscreen .hero-channel:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        .hero-channels-fullscreen .channel-content {
+            text-align: center;
+        }
+
+        .hero-channels-fullscreen .channel-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .hero-channels-fullscreen h3 {
+            font-size: 2rem;
+            margin: 0;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .hero-channels-fullscreen .notification-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #ff4757;
+            color: white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 8px rgba(255,71,87,0.3);
+        }
+
+        .hero-channels-fullscreen .notification-badge[style*="display: none"] {
+            display: none !important;
+        }
+
+        .hero-channels-fullscreen .channel-toggle {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            z-index: 20;
+            pointer-events: auto;
+        }
+        
+        .hero-channels-fullscreen .channel-toggle input,
+        .hero-channels-fullscreen .channel-toggle label {
+            pointer-events: auto;
+        }
+
+        .hero-channels {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .hero-channel {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            border: 3px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-channel:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .hero-channel.official {
+            border-color: #3b82f6;
+            background: linear-gradient(135deg, #ffffff, #eff6ff);
+        }
+
+        .hero-channel.official:hover {
+            box-shadow: 0 8px 30px rgba(59, 130, 246, 0.3);
+        }
+
+        .hero-channel.parents {
+            border-color: #10b981;
+            background: linear-gradient(135deg, #ffffff, #ecfdf5);
+        }
+
+        .hero-channel.parents:hover {
+            box-shadow: 0 8px 30px rgba(16, 185, 129, 0.3);
+        }
+
+        .hero-channel.parents.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(50%);
+        }
+
+        .hero-channel.urgent {
+            border-color: #ef4444;
+            background: linear-gradient(135deg, #ffffff, #fef2f2);
+        }
+
+        .hero-channel.urgent:hover {
+            box-shadow: 0 8px 30px rgba(239, 68, 68, 0.3);
+        }
+
+        .hero-channel.absence {
+            border-color: #f59e0b;
+            background: linear-gradient(135deg, #ffffff, #fffbeb);
+        }
+
+        .hero-channel.absence:hover {
+            box-shadow: 0 8px 30px rgba(245, 158, 11, 0.3);
+        }
+
+        .channel-icon {
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .channel-content h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #374151;
+        }
+
+        .channel-content p {
+            color: #6b7280;
+            margin-bottom: 1rem;
+        }
+
+        .message-count {
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: inline-block;
+        }
+
+        .hero-channel.official .message-count {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .hero-channel.parents .message-count {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .hero-channel.urgent .message-count {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .hero-channel.absence .message-count {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 12px;
+            height: 12px;
+            background: #ef4444;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .urgent-notification {
+            background: #dc2626 !important;
+            width: 16px;
+            height: 16px;
+            box-shadow: 0 0 10px rgba(220, 38, 38, 0.5);
+        }
+
+        .channel-toggle {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            z-index: 10;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 25px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.3s;
+            border-radius: 25px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 19px;
+            width: 19px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: #10b981;
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(25px);
+        }
+
+        .quick-actions {
+            margin-bottom: 3rem;
+        }
+
+        .quick-actions h3 {
+            color: #374151;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .recent-activity h3 {
+            color: #374151;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .activity-item:hover {
+            background: #f8f9fa;
+        }
+
+        .activity-icon {
+            font-size: 1.5rem;
+            margin-right: 1rem;
+            width: 40px;
+            text-align: center;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.2rem;
+        }
+
+        .activity-meta {
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+
+        .activity-time {
+            font-size: 0.8rem;
+            color: #9ca3af;
+            margin-left: auto;
+        }
+
+        .setup-options {
+            margin: 2rem 0;
+        }
+
+        .setup-options h3 {
+            color: #374151;
+            margin-bottom: 1rem;
+        }
+
+        .role-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .role-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 1.5rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .role-btn:hover {
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+        }
+
+        .role-btn.selected {
+            border-color: #3b82f6;
+            background: #eff6ff;
+            color: #1e40af;
+        }
+
+        .role-icon {
+            display: block;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .role-label {
+            font-weight: 600;
+        }
+
+        /* Recent Activity Styles */
+        .activity-item {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .activity-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .activity-channel {
+            font-weight: 600;
+            color: var(--primary-color);
+            font-size: 0.8rem;
+        }
+
+        .activity-time {
+            font-size: 0.7rem;
+            color: #666;
+        }
+
+        .activity-text {
+            color: #333;
+            line-height: 1.3;
+            margin-bottom: 4px;
+            font-size: 0.9rem;
+        }
+
+        .activity-author {
+            font-size: 0.7rem;
+            color: #888;
+            font-style: italic;
+        }
+
+        .no-activity {
+            text-align: center;
+            color: #888;
+            font-style: italic;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .tab-navigation {
+                padding: 4px;
+            }
+            
+            .tab-button {
+                padding: 8px 12px;
+                font-size: 0.9rem;
+            }
+
+            .hero-container {
+                padding: 10px;
+            }
+            
+            .hero-channels {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            
+            .hero-channel {
+                min-height: 100px;
+            }
+            
+            .channel-content h3 {
+                font-size: 1.1rem;
+            }
+            
+            .channel-description {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <h1>🏫 Comunicazione Scolastica</h1>
+            <p>Sistema Multi-Canale</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Hero Tab -->
+            <div class="tab-content active" id="hero-tab">
+                <!-- Top Navigation -->
+                <div class="top-nav">
+                    <button class="nav-btn" onclick="switchToTab('profile')">� Profilo</button>
+                </div>
+
+                <!-- Main Channels Grid (Full Screen) -->
+                <div class="hero-channels-fullscreen">
+                    <div class="hero-channel" data-channel="ufficiale">
+                        <div class="channel-content">
+                            <div class="channel-icon">📢</div>
+                            <h3>Canale Ufficiale</h3>
+                            <div class="notification-badge" id="badge-ufficiale">0</div>
+                        </div>
+                    </div>
+
+                    <div class="hero-channel" data-channel="genitori">
+                        <div class="channel-content">
+                            <div class="channel-icon">👨‍👩‍👧</div>
+                            <h3>Chat Genitori</h3>
+                            <div class="notification-badge" id="badge-genitori">0</div>
+                        </div>
+                    </div>
+
+                    <div class="hero-channel" data-channel="urgenti">
+                        <div class="channel-content">
+                            <div class="channel-icon">🚨</div>
+                            <h3>Urgenti</h3>
+                            <div class="notification-badge" id="badge-urgenti">0</div>
+                        </div>
+                    </div>
+
+                    <div class="hero-channel" data-channel="assenze">
+                        <div class="channel-content">
+                            <div class="channel-icon">📝</div>
+                            <h3>Assenze</h3>
+                            <div class="notification-badge" id="badge-assenze">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- End hero tab -->
+            </div>
+
+            <!-- Profilo Tab (unisce Setup e Impostazioni) -->
+            <div class="tab-content" id="profile-tab">
+                <!-- Top Navigation -->
+                <div class="top-nav">
+                    <button class="nav-btn" onclick="switchToTab('hero')">🏠 Home</button>
+                </div>
+                
+                <div class="card">
+                    <h2 class="card-title">👤 Profilo Utente</h2>
+                    <p style="color: #6b7280; margin-bottom: 2rem;">
+                        Gestisci il tuo profilo e le impostazioni dell'app
+                    </p>
+                    
+                    <div class="input-group">
+                        <label class="input-label" for="user-name-setup">Nome e Cognome</label>
+                        <input type="text" id="user-name-setup" class="input-field" placeholder="Es: Mario Rossi">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label" for="class-name-setup">Nome Classe</label>
+                        <input type="text" id="class-name-setup" class="input-field" placeholder="Es: 1A, Sezione Blu, III D">
+                    </div>
+                    
+                    <div class="setup-options">
+                        <h3>👤 Seleziona il tuo ruolo:</h3>
+                        <div class="role-buttons">
+                            <button class="role-btn" data-role="genitore">
+                                <span class="role-icon">👨‍👩‍👧‍👦</span>
+                                <span class="role-label">Genitore</span>
+                            </button>
+                            <button class="role-btn" data-role="insegnante">
+                                <span class="role-icon">👨‍🏫</span>
+                                <span class="role-label">Insegnante</span>
+                            </button>
+                            <button class="role-btn" data-role="rappresentante">
+                                <span class="role-icon">🗳️</span>
+                                <span class="role-label">Rappresentante</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button class="primary-button" id="complete-setup">
+                        ✅ Salva Profilo
+                    </button>
+                    
+                    <!-- Configurazione Attuale -->
+                    <div style="margin-top: 1.5rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                        <h4>📋 Stato Profilo</h4>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <div class="info-label">Ruolo:</div>
+                                <div class="info-value" id="current-role">Non configurato</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Nome:</div>
+                                <div class="info-value" id="current-name">Non inserito</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Classe:</div>
+                                <div class="info-value" id="current-class">Non inserita</div>
+                            </div>
+                        </div>
+                        <div class="status-indicator">
+                            <span class="status-badge" id="config-status">⚠️ Configurazione Incompleta</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Communication Tab -->
+            <div class="tab-content" id="communication-tab">
+                <!-- Top Navigation -->
+                <div class="top-nav">
+                    <button class="nav-btn" onclick="switchToTab('hero')">🏠 Home</button>
+                </div>
+                
+                <div id="setup-required-message" class="setup-required">
+                    <h3>⚙️ Configurazione Richiesta</h3>
+                    <p>Prima di accedere alle comunicazioni, completa la configurazione nella scheda Setup.</p>
+                </div>
+
+                <div id="communication-content" style="display: none;">
+                    <div class="channel-tabs">
+                        <button class="channel-tab official active" data-channel="ufficiale">📢 Canale Ufficiale</button>
+                        <button class="channel-tab parents" data-channel="genitori">💬 Chat Genitori</button>
+                        <button class="channel-tab urgent" data-channel="urgenti">🚨 Comunicazioni Urgenti</button>
+                        <button class="channel-tab absence" data-channel="assenze">📋 Gestione Assenze</button>
+                    </div>
+
+                    <div class="card">
+                        <div class="channel-header">
+                            <div id="channel-info" class="card-title">📢 Canale Ufficiale</div>
+                            <button class="notification-toggle-btn" id="notification-toggle" style="display: none;">
+                                <span id="notification-icon">🔔</span>
+                                <span id="notification-text">Notifiche ON</span>
+                            </button>
+                        </div>
+                        <div class="messages-container" id="messages-container">
+                            <!-- Messages will be populated here -->
+                        </div>
+                        <div class="message-input-container" id="message-input-container" style="display: none;">
+                            <textarea id="message-input" class="message-input" placeholder="Scrivi un messaggio..."></textarea>
+                            <button class="send-button" id="send-message" disabled>Invia</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+    <div class="notification" id="notification"></div>
+    </div>
+
+    <script>
+        // App State
+        const appState = {
+            schoolType: 'elementari', // Set default for demo
+            userRole: 'genitore', // Set default for demo  
+            userName: 'Mario Rossi', // Set default for demo
+            className: '3A', // Set default for demo
+            activeChannel: 'ufficiale',
+            parentsChannelEnabled: true,
+            notifications: {
+                ufficiale: false,
+                genitori: false,
+                urgenti: true,
+                assenze: false
+            },
+            lastViewed: {
+                ufficiale: new Date('2024-09-10T08:00:00'),
+                genitori: new Date('2024-09-12T08:00:00'),
+                urgenti: new Date('2024-09-13T08:00:00'),
+                assenze: new Date('2024-09-14T08:00:00')
+            },
+            messages: [
+                {
+                    id: '1',
+                    text: 'Benvenuti al nuovo anno scolastico! Vi ricordiamo che domani iniziano le lezioni.',
+                    author: 'Dirigente Scolastico',
+                    role: 'insegnante',
+                    timestamp: new Date('2024-09-10T09:00:00'),
+                    channel: 'ufficiale',
+                },
+                {
+                    id: '2',
+                    text: 'Ricordiamo a tutti i genitori che la riunione di classe è fissata per venerdì alle 17:00.',
+                    author: 'Maestra Elena',
+                    role: 'insegnante',
+                    timestamp: new Date('2024-09-12T14:30:00'),
+                    channel: 'ufficiale',
+                },
+                {
+                    id: '3',
+                    text: 'Ciao a tutti! Qualcuno sa se serve comprare i quaderni speciali per matematica?',
+                    author: 'Marco Rossi',
+                    role: 'genitore',
+                    timestamp: new Date('2024-09-13T08:15:00'),
+                    channel: 'genitori',
+                },
+                {
+                    id: '4',
+                    text: 'ATTENZIONE: Domani le lezioni sono sospese per maltempo. Restate a casa!',
+                    author: 'Prof. Bianchi',
+                    role: 'insegnante',
+                    timestamp: new Date('2024-09-14T06:45:00'),
+                    channel: 'urgenti',
+                },
+                {
+                    id: '5',
+                    text: 'Mia figlia Giulia sarà assente domani per visita medica.',
+                    author: 'Laura Verde',
+                    role: 'genitore',
+                    timestamp: new Date('2024-09-15T19:20:00'),
+                    channel: 'assenze',
+                },
+                {
+                    id: '6',
+                    text: 'Nuova comunicazione: la gita di primavera è confermata per il 15 maggio.',
+                    author: 'Coordinatrice Didattica',
+                    role: 'insegnante',
+                    timestamp: new Date(),
+                    channel: 'ufficiale',
+                },
+                {
+                    id: '7',
+                    text: 'URGENTE: Domani chiusura anticipata alle 14:00 per assemblea.',
+                    author: 'Dirigente Scolastico',
+                    role: 'insegnante',
+                    timestamp: new Date(Date.now() - 300000), // 5 minutes ago
+                    channel: 'urgenti',
+                }
+            ]
+        };
+
+        // Channel configurations
+        const channelConfig = {
+            ufficiale: {
+                title: '📢 Canale Ufficiale',
+                description: 'Comunicazioni istituzionali dalla scuola',
+                canWrite: (role) => role === 'insegnante'
+            },
+            genitori: {
+                title: '💬 Chat Genitori',
+                description: 'Chat aperta tra tutti i genitori della classe',
+                canWrite: (role) => role === 'genitore' || role === 'rappresentante'
+            },
+            urgenti: {
+                title: '🚨 Comunicazioni Urgenti',
+                description: 'Comunicazioni urgenti dagli insegnanti',
+                canWrite: (role) => role === 'insegnante'
+            },
+            assenze: {
+                title: '📋 Gestione Assenze',
+                description: 'Comunicazioni di assenze e giustificazioni',
+                canWrite: (role) => true
+            }
+        };
+
+        // Utility functions
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        function formatTime(date) {
+            return new Date(date).toLocaleDateString('it-IT', {
+                day: '2-digit',
+                month: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+            });
+        }
+
+        function isConfigComplete() {
+            return appState.schoolType && appState.userRole && appState.userName && appState.className;
+        }
+
+        function getUnreadCount(channel) {
+            const lastViewed = appState.lastViewed[channel];
+            return appState.messages.filter(msg => 
+                msg.channel === channel && 
+                new Date(msg.timestamp) > lastViewed
+            ).length;
+        }
+
+        function updateHeroChannels() {
+            // Update message counts and notifications for fullscreen hero
+            const channels = ['ufficiale', 'genitori', 'urgenti', 'assenze'];
+            
+            channels.forEach(channel => {
+                const unreadCount = getUnreadCount(channel);
+                const badgeElement = document.getElementById(`badge-${channel}`);
+                
+                if (badgeElement) {
+                    if (unreadCount > 0) {
+                        badgeElement.textContent = unreadCount;
+                        badgeElement.style.display = 'flex';
+                    } else {
+                        badgeElement.style.display = 'none';
+                    }
+                }
+            });
+
+            // Handle parents channel visibility
+            const parentsToggle = document.getElementById('parents-toggle');
+            if (parentsToggle) {
+                parentsToggle.checked = appState.parentsChannelEnabled;
+            }
+        }
+
+        function updateRecentActivity() {
+            const activityList = document.getElementById('activity-list');
+            if (!activityList) return;
+
+            const recentMessages = appState.messages
+                .slice(-5)
+                .reverse()
+                .map(msg => {
+                    const channelNames = {
+                        'ufficiale': 'Canale Ufficiale',
+                        'genitori': 'Chat Genitori', 
+                        'urgenti': 'Comunicazioni Urgenti',
+                        'assenze': 'Gestione Assenze'
+                    };
+                    
+                    const icons = {
+                        'ufficiale': '📢',
+                        'genitori': '💬',
+                        'urgenti': '🚨', 
+                        'assenze': '📋'
+                    };
+
+                    return `
+                        <div class="activity-item">
+                            <div class="activity-icon">${icons[msg.channel]}</div>
+                            <div class="activity-content">
+                                <div class="activity-title">${msg.author}</div>
+                                <div class="activity-meta">${channelNames[msg.channel]} • ${msg.text.substring(0, 50)}...</div>
+                            </div>
+                            <div class="activity-time">${formatTime(msg.timestamp)}</div>
+                        </div>
+                    `;
+                }).join('');
+
+            activityList.innerHTML = recentMessages;
+        }
+
+        // Navigation functions
+        function switchToTab(tabName) {
+            // Remove active class from all content
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+            // Add active class to target tab
+            document.getElementById(`${tabName}-tab`)?.classList.add('active');
+            
+            // If switching to communication tab, initialize its listeners
+            if (tabName === 'communication') {
+                setTimeout(() => {
+                    initializeCommunicationListeners();
+                }, 50);
+            }
+        }
+
+        // Hero page functions
+        function showQuickAbsence() {
+            const message = prompt('Inserisci il motivo dell\'assenza:');
+            if (message && message.trim()) {
+                const newMessage = {
+                    id: Date.now().toString(),
+                    text: `Assenza comunicata: ${message.trim()}`,
+                    author: appState.userName,
+                    role: appState.userRole,
+                    timestamp: new Date(),
+                    channel: 'assenze',
+                };
+                
+                appState.messages.push(newMessage);
+                updateHeroChannels();
+                updateRecentActivity();
+                showNotification('Assenza comunicata con successo!');
+            }
+        }
+
+        function showNotificationSettings() {
+            showNotification('Impostazioni notifiche aggiornate!');
+        }
+
+        function showAllMessages() {
+            // Switch to communication tab
+            document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            document.querySelector('[data-tab="communication"]').classList.add('active');
+            document.getElementById('communication-tab').classList.add('active');
+        }
+
+        function updateConfigStatus() {
+            // Aggiorna i valori visualizzati nel profilo (solo se esistono)
+            const currentRole = document.getElementById('current-role');
+            const currentName = document.getElementById('current-name');
+            const currentClass = document.getElementById('current-class');
+            
+            if (currentRole) {
+                currentRole.textContent = appState.userRole ? 
+                    appState.userRole.charAt(0).toUpperCase() + appState.userRole.slice(1) : 'Non configurato';
+            }
+            
+            if (currentName) {
+                currentName.textContent = appState.userName || 'Non inserito';
+            }
+            
+            if (currentClass) {
+                currentClass.textContent = appState.className || 'Non inserita';
+            }
+
+            const statusBadge = document.getElementById('config-status');
+            if (statusBadge) {
+                if (isConfigComplete()) {
+                    statusBadge.className = 'status-badge status-complete';
+                    statusBadge.textContent = '✅ Configurazione Completa';
+                } else {
+                    statusBadge.className = 'status-badge status-incomplete';
+                    statusBadge.textContent = '❌ Configurazione Incompleta';
+                }
+            }
+
+            // Aggiorna anche i campi input per riflettere lo stato attuale
+            const userNameInput = document.getElementById('user-name-setup');
+            const classNameInput = document.getElementById('class-name-setup');
+            
+            if (userNameInput && appState.userName) {
+                userNameInput.value = appState.userName;
+            }
+            
+            if (classNameInput && appState.className) {
+                classNameInput.value = appState.className;
+            }
+
+            // Aggiorna la selezione del ruolo
+            document.querySelectorAll('.role-btn').forEach(btn => {
+                btn.classList.remove('selected');
+                if (btn.dataset.role === appState.userRole) {
+                    btn.classList.add('selected');
+                }
+            });
+
+            // Update communication tab visibility
+            const setupRequired = document.getElementById('setup-required-message');
+            const communicationContent = document.getElementById('communication-content');
+            
+            if (isConfigComplete()) {
+                if (setupRequired) setupRequired.style.display = 'none';
+                if (communicationContent) communicationContent.style.display = 'block';
+            } else {
+                if (setupRequired) setupRequired.style.display = 'block';
+                if (communicationContent) communicationContent.style.display = 'none';
+            }
+        }
+
+        // Hero channel clicks
+        document.querySelectorAll('.hero-channel').forEach(channel => {
+            channel.addEventListener('click', (e) => {
+                console.log('Click su canale:', channel.dataset.channel);
+                
+                const channelName = channel.dataset.channel;
+                console.log('Nome canale:', channelName);
+                
+                console.log('Controllo configurazione:', isConfigComplete());
+                
+                // Mark as read
+                appState.lastViewed[channelName] = new Date();
+                
+                // Switch to communication tab with selected channel
+                appState.activeChannel = channelName;
+                console.log('Canale attivo impostato a:', appState.activeChannel);
+                
+                updateChannelView();
+                updateHeroChannels();
+                
+                // Hide all tabs
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // Show communication tab
+                const communicationContent = document.getElementById('communication-tab');
+                if (communicationContent) {
+                    communicationContent.classList.add('active');
+                    console.log('Communication tab attivato');
+                }
+                
+                // Reinitialize communication listeners since we're switching to that tab
+                setTimeout(() => {
+                    initializeCommunicationListeners();
+                }, 50);
+                
+                showNotification(`Aperto: ${channel.querySelector('.channel-content h3').textContent}`);
+            });
+        });
+
+        // Role selection
+        document.querySelectorAll('.role-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                appState.userRole = btn.dataset.role;
+                updateConfigStatus();
+            });
+        });
+
+        // Notification toggle for Chat Genitori
+        document.getElementById('notification-toggle')?.addEventListener('click', () => {
+            appState.notifications.genitori = !appState.notifications.genitori;
+            updateNotificationToggleUI();
+            
+            if (appState.notifications.genitori) {
+                showNotification('✅ Notifiche Chat Genitori attivate');
+            } else {
+                showNotification('🔕 Notifiche Chat Genitori disattivate');
+            }
+        });
+
+        // Complete setup
+        document.getElementById('complete-setup').addEventListener('click', () => {
+            const userName = document.getElementById('user-name-setup').value;
+            const className = document.getElementById('class-name-setup').value;
+            
+            if (userName.trim() && className.trim() && appState.userRole) {
+                appState.userName = userName.trim();
+                appState.className = className.trim();
+                updateConfigStatus();
+                showNotification('Configurazione completata!');
+                
+                // Switch to hero page
+                switchToTab('hero');
+            } else {
+                showNotification('Completa tutti i campi per continuare');
+            }
+        });
+
+        // School type selection
+        document.querySelectorAll('#school-types .option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('#school-types .option').forEach(o => o.classList.remove('selected'));
+                option.classList.add('selected');
+                appState.schoolType = option.dataset.value;
+                updateConfigStatus();
+            });
+        });
+
+        // User role selection
+        document.querySelectorAll('#user-roles .option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('#user-roles .option').forEach(o => o.classList.remove('selected'));
+                option.classList.add('selected');
+                appState.userRole = option.dataset.value;
+                updateConfigStatus();
+                updateMessageInterface();
+            });
+        });
+
+        // Demo role selection
+        document.querySelectorAll('#demo-roles .option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('#demo-roles .option').forEach(o => o.classList.remove('selected'));
+                option.classList.add('selected');
+                appState.userRole = option.dataset.demoRole;
+                updateConfigStatus();
+                updateMessageInterface();
+                showNotification(`Ruolo cambiato: ${option.dataset.demoRole}`);
+            });
+        });
+
+        // Personal data inputs
+        document.getElementById('user-name').addEventListener('input', (e) => {
+            appState.userName = e.target.value;
+            updateConfigStatus();
+        });
+
+        document.getElementById('class-name').addEventListener('input', (e) => {
+            appState.className = e.target.value;
+            updateConfigStatus();
+        });
+
+        // Save configuration
+        document.getElementById('save-config').addEventListener('click', () => {
+            if (isConfigComplete()) {
+                showNotification(`Configurazione salvata! Benvenuto/a ${appState.userName}!`);
+            }
+        });
+
+        // Initialize event listeners for communication page
+        function initializeCommunicationListeners() {
+            console.log('Inizializzazione event listeners comunicazione...');
+            
+            // Channel navigation tabs
+            const channelTabs = document.querySelectorAll('.channel-tab');
+            console.log('Trovati tabs canale:', channelTabs.length);
+            
+            channelTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    console.log('Click su tab canale:', tab.dataset.channel);
+                    document.querySelectorAll('.channel-tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    appState.activeChannel = tab.dataset.channel;
+                    console.log('Nuovo canale attivo:', appState.activeChannel);
+                    updateChannelView();
+                });
+            });
+
+            // Message sending button
+            const sendButton = document.getElementById('send-message');
+            const messageInput = document.getElementById('message-input');
+            
+            if (sendButton && messageInput) {
+                console.log('Elementi messaggi trovati, aggiungendo listeners...');
+                
+                sendButton.addEventListener('click', sendMessage);
+                
+                messageInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendMessage();
+                    }
+                });
+
+                // Enable/disable send button based on input
+                messageInput.addEventListener('input', (e) => {
+                    const hasText = e.target.value.trim().length > 0;
+                    sendButton.disabled = !hasText;
+                });
+            } else {
+                console.log('Elementi messaggi non trovati!');
+            }
+        }
+
+        function sendMessage() {
+            const messageInput = document.getElementById('message-input');
+            const messageText = messageInput.value.trim();
+            
+            if (!messageText || !appState.userName) return;
+
+            const newMessage = {
+                id: Date.now().toString(),
+                text: messageText,
+                author: appState.userName,
+                role: appState.userRole,
+                timestamp: new Date(),
+                channel: appState.activeChannel,
+            };
+
+            appState.messages.push(newMessage);
+            messageInput.value = '';
+            document.getElementById('send-message').disabled = true;
+            updateChannelView();
+            showNotification('Messaggio inviato!');
+        }
+
+        function updateChannelView() {
+            console.log('updateChannelView chiamata per canale:', appState.activeChannel);
+            
+            const channelInfo = document.getElementById('channel-info');
+            const config = channelConfig[appState.activeChannel];
+            
+            if (channelInfo && config) {
+                channelInfo.textContent = config.title;
+                console.log('Titolo aggiornato a:', config.title);
+            }
+
+            // Update notification toggle button visibility
+            const notificationToggle = document.getElementById('notification-toggle');
+            if (notificationToggle) {
+                // Show button only for Chat Genitori
+                if (appState.activeChannel === 'genitori') {
+                    notificationToggle.style.display = 'flex';
+                    updateNotificationToggleUI();
+                } else {
+                    notificationToggle.style.display = 'none';
+                }
+            }
+
+            // Update messages
+            const messagesContainer = document.getElementById('messages-container');
+            const channelMessages = appState.messages.filter(msg => msg.channel === appState.activeChannel);
+            
+            console.log('Messaggi trovati per canale:', channelMessages.length);
+            
+            if (channelMessages.length === 0) {
+                messagesContainer.innerHTML = '<div class="empty-state"><p>Nessun messaggio in questo canale</p><p style="font-size: 0.9rem; margin-top: 0.5rem;">I messaggi appariranno qui quando disponibili</p></div>';
+            } else {
+                messagesContainer.innerHTML = channelMessages
+                    .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
+                    .map(msg => `
+                        <div class="message ${msg.role === 'insegnante' ? 'teacher' : ''}">
+                            <div class="message-header">
+                                <span class="message-author">
+                                    ${msg.role === 'insegnante' ? '👨‍🏫' : msg.role === 'rappresentante' ? '🗳️' : '👤'} ${msg.author}
+                                </span>
+                                <span class="message-time">${formatTime(msg.timestamp)}</span>
+                            </div>
+                            <div class="message-text">${msg.text}</div>
+                        </div>
+                    `).join('');
+            }
+
+            updateMessageInterface();
+        }
+
+        function updateMessageInterface() {
+            const inputContainer = document.getElementById('message-input-container');
+            const config = channelConfig[appState.activeChannel];
+            
+            console.log('updateMessageInterface - canale:', appState.activeChannel);
+            console.log('updateMessageInterface - config:', config);
+            console.log('updateMessageInterface - ruolo:', appState.userRole);
+            console.log('updateMessageInterface - configurazione completa:', isConfigComplete());
+            
+            if (config && config.canWrite(appState.userRole) && isConfigComplete()) {
+                console.log('Mostrando interfaccia messaggi');
+                inputContainer.style.display = 'flex';
+            } else {
+                console.log('Nascondendo interfaccia messaggi');
+                inputContainer.style.display = 'none';
+            }
+        }
+
+        // Update notification toggle button UI
+        function updateNotificationToggleUI() {
+            const notificationToggle = document.getElementById('notification-toggle');
+            const notificationIcon = document.getElementById('notification-icon');
+            const notificationText = document.getElementById('notification-text');
+            
+            if (!notificationToggle || !notificationIcon || !notificationText) return;
+            
+            const isEnabled = appState.notifications.genitori;
+            
+            if (isEnabled) {
+                notificationToggle.classList.remove('disabled');
+                notificationIcon.textContent = '🔔';
+                notificationText.textContent = 'Notifiche ON';
+            } else {
+                notificationToggle.classList.add('disabled');
+                notificationIcon.textContent = '🔕';
+                notificationText.textContent = 'Notifiche OFF';
+            }
+        }
+
+        // Update recent activity display
+        function updateRecentActivity() {
+            const activityContainer = document.getElementById('recent-activity');
+            if (!activityContainer) return;
+            
+            // Get all messages with channel info
+            const allMessages = appState.messages.map(msg => ({
+                ...msg,
+                channelName: getChannelDisplayName(msg.channel || 'ufficiale')
+            }));
+            
+            // Sort by timestamp and take last 3
+            const recentMessages = allMessages
+                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+                .slice(0, 3);
+            
+            if (recentMessages.length === 0) {
+                activityContainer.innerHTML = '<div class="no-activity">🌟 Benvenuto! Nessuna attività recente.</div>';
+                return;
+            }
+            
+            const activityHTML = recentMessages.map(msg => `
+                <div class="activity-item">
+                    <div class="activity-header">
+                        <span class="activity-channel">${msg.channelName}</span>
+                        <span class="activity-time">${formatRelativeTime(new Date(msg.timestamp))}</span>
+                    </div>
+                    <div class="activity-text">${msg.text.substring(0, 60)}${msg.text.length > 60 ? '...' : ''}</div>
+                    <div class="activity-author">da ${msg.author}</div>
+                </div>
+            `).join('');
+            
+            activityContainer.innerHTML = activityHTML;
+        }
+
+        function getChannelDisplayName(channel) {
+            const names = {
+                'ufficiale': 'Canale Ufficiale',
+                'genitori': 'Chat Genitori', 
+                'urgenti': 'Comunicazioni Urgenti',
+                'assenze': 'Gestione Assenze'
+            };
+            return names[channel] || channel;
+        }
+
+        function formatRelativeTime(timestamp) {
+            const now = new Date();
+            const diff = now - timestamp;
+            const minutes = Math.floor(diff / (1000 * 60));
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            
+            if (minutes < 1) return 'Ora';
+            if (minutes < 60) return `${minutes}m fa`;
+            if (hours < 24) return `${hours}h fa`;
+            return `${days}g fa`;
+        }
+
+        // Initialize hero page
+        function initializeHeroPage() {
+            updateHeroChannels();
+            updateRecentActivity();
+            
+            // Update every 30 seconds
+            setInterval(() => {
+                updateHeroChannels();
+                updateRecentActivity();
+            }, 30000);
+        }
+
+        // Initialize the app
+        console.log('Inizializzazione app...');
+        console.log('AppState:', appState);
+        console.log('isConfigComplete:', isConfigComplete());
+        
+        // Assicuriamoci che il profilo sia salvato con i valori di default
+        if (appState.userName && appState.className && appState.userRole) {
+            console.log('Configurazione già completa, aggiornamento interfaccia...');
+        }
+        
+        updateConfigStatus();
+        updateChannelView();
+        initializeHeroPage();
+        
+        // Inizializza event listeners dopo un breve delay per assicurarsi che il DOM sia pronto
+        setTimeout(() => {
+            initializeCommunicationListeners();
+        }, 100);
+    </script>
+</body>
+</html>
