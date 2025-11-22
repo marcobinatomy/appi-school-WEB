@@ -16,7 +16,7 @@ import { colors } from './src/styles/colors';
 import { getStatusBarHeight } from './src/styles/dimensions';
 
 const Tab = createBottomTabNavigator();
-
+//ciao
 function App(): JSX.Element {
   return (
     <SchoolContextProvider>
